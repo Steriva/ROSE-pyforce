@@ -16,6 +16,7 @@ Welcome to pyforce's docs!
    theory.md
    tutorials
    API Documentation <api/pyforce>
+   Papers with Code <paper_code>
    bibliography
 
 
