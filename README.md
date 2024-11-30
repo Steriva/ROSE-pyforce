@@ -15,7 +15,7 @@
 
 - [Description](#description)
 - [How to cite *pyforce*](#how-to-cite-pyforce)
-  - [Recent works with *pyforce*](#recent-works-with-pyforce)
+  - [Selected works with *pyforce*](#selected-works-with-pyforce)
 - [Installation](#installation)
 - [Tutorials](#tutorials)
 - [Authors and contributions](#authors-and-contributions)
@@ -46,8 +46,7 @@ This package is aimed to be a valuable tool for other researchers, engineers, an
 
 ## How to cite *pyforce*
 
-If you are going to use *pyforce* in your research work, please cite the following articles.
-The authors would be pleased if you could cite the relevant papers:
+If you are going to use *pyforce* in your research work, please cite the following articles:
 
 1. Stefano Riva, Carolina Introini, and Antonio Cammi, “Multi-physics model bias correction with data-driven reduced order techniques: Application to nuclear case studies,” Applied Mathematical Modelling, vol. 135, pp. 243–268, 2024. [https://doi.org/10.1016/j.apm.2024.06.040](https://doi.org/10.1016/j.apm.2024.06.040).
 2. Antonio Cammi, Stefano Riva, Carolina Introini, Lorenzo Loi, and Enrico Padovani. Data-driven model order reduction for sensor positioning and indirect reconstruction with noisy data: Application to a circulating fuel reactor. Nuclear Engineering and Design, 421:113105, 2024. doi:[https://doi.org/10.1016/j.nucengdes.2024.113105](https://doi.org/10.1016/j.nucengdes.2024.113105).
