@@ -88,6 +88,10 @@ target/
 tests/testIO
 testIO
 
+# Paper Code Data
+docs/PaperCode/01_BFS_POD_GPR/Snapshots
+docs/PaperCode/01_BFS_POD_GPR/BFS2D.geo
+
 # Jupyter Notebook
 .ipynb_checkpoints
 

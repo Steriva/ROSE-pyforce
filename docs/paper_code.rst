@@ -18,6 +18,5 @@ Each case requires a dataset to be generated: the data can be downloaded from `Z
 .. toctree::
     :maxdepth: 1
     :caption: List of Available Codes:
-    :numbered:
     
     POD-GPR on MHD flows <PaperCode/01_BFS_PODGPR.rst>

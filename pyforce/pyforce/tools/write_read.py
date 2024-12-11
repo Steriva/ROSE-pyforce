@@ -24,7 +24,8 @@ import pyvista as pv
 
 from scipy.interpolate import NearestNDInterpolator, LinearNDInterpolator
 
-def StoreFunctionsList(domain, snap: FunctionsList, var_name: str, filename: str, order = None):
+def StoreFunctionsList(domain, snap: FunctionsList, var_name: str, filename: str, 
+                       order = None, verbose: bool = False):
     """
     This function can be used to save in `xdmf/h5` files scalar or vector list of functions.
 
@@ -40,11 +41,16 @@ def StoreFunctionsList(domain, snap: FunctionsList, var_name: str, filename: str
         Name of the file to save as xdmf/h5 file.
     order : optional (Default = `None`)
         It must be passed as a list of integers containing the ordered indeces.
+    verbose: boolean, (Default = False) 
+        If `True`, printing is enabled.
     """
     xdmf = XDMFFile(domain.comm, filename+".xdmf", "w")
     xdmf.write_mesh(domain)
 
     fun_to_store = Function(snap.fun_space)
+
+    if verbose:
+        bar = LoopProgress('Storing '+var_name, len(snap))
 
     for ii in range(len(snap)):
 
@@ -56,6 +62,10 @@ def StoreFunctionsList(domain, snap: FunctionsList, var_name: str, filename: str
             xdmf.write_function(fun_to_store, ii * 1.)
         else:
             xdmf.write_function(fun_to_store, order[ii])
+
+        if verbose:
+            bar.update(1)
+
     xdmf.close()
 
 def ImportH5(V: FunctionSpace, filename: str, var_name: str, verbose = False):
@@ -177,7 +187,7 @@ class ReadFromOF():
             
             self.reader = pv.POpenFOAMReader(foam_file_path)
 
-    def import_field(self, var_name: str, vector: bool =False, verbose: bool =True):
+    def import_field(self, var_name: str, vector: bool = False, verbose: bool = True):
         """
         Importing all time instances (**skipping zero folder**) from OpenFOAM directory.
 
@@ -230,13 +240,16 @@ class ReadFromOF():
             
         else: 
             if verbose:
-                print('Importing '+var_name+' using pyvista')
+                bar = LoopProgress('Importing '+var_name+' using pyvista', final = len(self.reader.time_values)-1)
             for idx_t in range(1, len(self.reader.time_values)):
                 self.reader.set_active_time_value(self.reader.time_values[idx_t])  
                 
                 field.append(self.reader.read()['internalMesh'].point_data[var_name])
                 time_instants.append(self.reader.time_values[idx_t])
                 
+                if verbose:
+                    bar.update(1)
+
         return field, time_instants
     
     def create_mesh(self):
