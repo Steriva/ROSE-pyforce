@@ -66,8 +66,6 @@ class OnlineDDROM(ABC):
         """Abstract method to reduce the dimensionality of the data and obtain the true latent dynamics (backend method)."""
         pass
 
-
-
 class SurrogateModelWrapper(ABC):
     """
     A wrapper class for surrogate models to predict coefficients based on input vector (it can be either test parameters or measurements).
