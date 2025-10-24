@@ -94,19 +94,29 @@ In addition to the above references, here are some selected works where *pyforce
 - S. Riva, S. Deanesi, C. Introini, S. Lorenzi, and A. Cammi, “Real-time state estimation of neutron flux in molten salt fast reactors from out-core sparse measurements,” Nuclear Science and Engineering, vol. 0, no. 0, pp. 1–14, 2025, [doi.org/10.1080/00295639.2025.2531477](https://doi.org/10.1080/00295639.2025.2531477).
 
 ## Installation
-The package can be installed using `pip`, including all the dependencies. At first, clone the repository
+The package can be installed using `pip`, including all the dependencies. At first, clone the repository (this will clone the official one)
 
 ```bash
 git clone https://github.com/ERMETE-Lab/ROSE-pyforce.git
 cd ROSE-pyforce
 ```
-then install the package using `pip`
+
+if you want to install the development version, clone the repo from Steriva's account
+
+```bash
+git clone --branch pyforce2.0-dev --single-branch https://github.com/ERMETE-Lab/ROSE-pyforce.git
+cd ROSE-pyforce
+```
+
+then install the package using `pip` (this will work if you already have `python` and `pip` installed, it might not be true for `miniconda` installations):
+
 ```bash
 python -m pip install pyforce/
 ```
+
 It is recommended to install the package in a conda environment.
 
-The dependencies can be also installed manually or adopting the `environment.yml` file as follows:
+If you face issues with rendering figures with `pyvista`, please install the dependencies adopting the `environment.yml` file as follows:
 
 ```bash
 conda env create -f pyforce/environment.yml

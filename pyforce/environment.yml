@@ -5,13 +5,14 @@ dependencies:
   - python=3.10
   - IPykernel
   - pip
+  - pyvista
   - pip:
-    - numpy
     - scipy
     - matplotlib
-    - pyvista
     - h5py
     - tqdm
+    - trame-vtk
+    - trame-vuetify
     - fluidfoam
     - trame-vtk
     - scikit-learn

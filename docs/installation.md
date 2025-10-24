@@ -59,3 +59,5 @@ Then, install the package using `pip`
 ```bash
 python -m pip install pyforce/
 ```
+
+This procedure can solve issues related to the installation of some dependencies, especially `pyvista`.
