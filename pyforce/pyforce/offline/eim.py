@@ -1,4 +1,4 @@
-# Offline Phase: Empirical Interpolation Method (EIM)
+# Offline Phase: Empirical Interpolation Method (EIM) - including discrete empirical interpolation method (DEIM)
 # Author: Stefano Riva, PhD Student, NRG, Politecnico di Milano
 # Latest Code Update: 07 October 2025
 # Latest Doc  Update: 07 October 2025
@@ -461,3 +461,67 @@ class EIM(OfflineDDROM):
                                     **kwargs)
         
         np.save(os.path.join(path_folder, f'magic_points_{self.varname}.npy'), self.magic_points)
+
+def deim(basis_functions: FunctionsList, 
+         Mmax: int,
+         varname: str = 'u',
+         _xm_idx : list = None,
+         path_folder: str = None):
+    
+    r"""
+    This function implements the Discrete Empirical Interpolation Method (DEIM) for selecting magic points from a given set of basis functions.
+
+    Parameters
+    ----------
+    basis_functions : FunctionsList
+        The list of basis functions from which to select magic points.
+    Mmax : int
+        The maximum number of magic points to select.
+    varname : str, optional
+        The name of the variable for which the magic points are being selected. Default is 'u'.
+    _xm_idx : list, optional
+        A list of indices to consider for magic point selection. If None, all indices are considered.
+    path_folder : str, optional
+        The folder path where the selected magic points will be saved. If None, the points are simply returned.
+
+    Returns
+    -------
+    magic_pt : np.ndarray
+        An array of selected magic point indices.
+    P : np.ndarray
+        The DEIM selection matrix (observation operator).
+    """
+
+    modes = basis_functions.return_matrix()
+
+    # Define available indices
+    if _xm_idx is None:
+        xm = np.arange(modes.shape[0], dtype=int)
+    else:
+        xm = _xm_idx
+
+    # Initialize DEIM arrays
+    magic_pt = np.zeros(Mmax, dtype=int)
+    P = np.zeros((Mmax, modes.shape[0]))
+
+    # DEIM loop
+    for j in range(1, Mmax):
+
+        # Solve linear system
+        PtU = (P[:j] @ modes[:, :j]).reshape(j,j)
+        y = modes[magic_pt[:j], j]
+        c = np.linalg.solve(PtU, y)
+
+        # Compute the residual
+        r = modes[xm, j] - modes[xm, :j] @ c
+
+        # Select the next DEIM point
+        p = np.argmax(np.abs(r))
+        P[j, xm[p]] = 1
+        magic_pt[j] = xm[p]
+
+    if path_folder is not None:
+        os.makedirs(path_folder, exist_ok=True)
+        np.save(os.path.join(path_folder, f'magic_points_deim_{varname}.npy'), magic_pt)
+
+    return magic_pt, P
