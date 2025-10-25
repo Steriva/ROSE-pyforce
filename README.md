@@ -137,12 +137,15 @@ The requirements are listed [here](https://github.com/ERMETE-Lab/ROSE-pyforce/bl
 ## Tutorials
 The *pyforce* package is tested on some tutorials available in the [docs](https://ermete-lab.github.io/ROSE-pyforce/tutorials.html), including fluid dynamics, neutronics and multi-physics problems or available in the `docs/Tutorials` folder. Each tutorial includes a Jupyter notebook:
 
-0. First steps with *pyforce*: introduction to the package and its basic features.
-1. Introduction to Singular Value Decomposition (SVD) and Proper Orthogonal Decomposition (POD) and application to a fluid dynamics problem using the POD with Interpolation (POD-I) technique.
-2. Presentation of (Generalised) Empirical Interpolation Method ((G)EIM) and application to a bouyancy-driven fluid dynamics problem.
-3. Sensor positioning with (G)EIM and SGreedy algorithm and application of the Parameterised-Background Data-Weak (PBDW) formulation to a neutronics problem.
-4. Reconstruction of Unobservable fields from temperature measurements using Parameter Estimation + POD with Interpolation and Gaussian Process Regression, applied to a bouyancy-driven fluid dynamics problem.
-5. State Estimation in Molten Salt Fast Reactors (MSFR) with failing sensors using GEIM and PBDW techniques.
+1. First steps with *pyforce*: introduction to the package and its basic features.
+2. Introduction to Singular Value Decomposition (SVD) and Proper Orthogonal Decomposition (POD) and application to a fluid dynamics problem using the POD with Interpolation (POD-I) technique.
+3. Presentation of (Generalised) Empirical Interpolation Method ((G)EIM) and application to a bouyancy-driven fluid dynamics problem.
+4. Sensor positioning with (G)EIM and SGreedy algorithm and application of the Parameterised-Background Data-Weak (PBDW) formulation to a neutronics problem.
+
+In addition to these basic tutorials, some advanced tutorials are also available at `docs/Tutorials/Advanced` folder:
+
+5. Reconstruction of Unobservable fields from temperature measurements using Parameter Estimation + POD with Interpolation and Gaussian Process Regression, applied to a bouyancy-driven fluid dynamics problem.
+6. State Estimation in Molten Salt Fast Reactors (MSFR) with failing sensors using GEIM and PBDW techniques.
 
 The snapshots can be downloaded at the following link ... or contact Stefano Riva for further information.
 

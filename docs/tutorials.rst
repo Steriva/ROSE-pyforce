@@ -1,5 +1,5 @@
-Tutorials
-============
+Basic Tutorials
+===============
 
 In this section some tutorials on how to use `pyforce` will be discussed.
 

@@ -12,10 +12,26 @@ pyforce.online.eim module
    :undoc-members:
    :show-inheritance:
 
+pyforce.online.failure\_sens module
+-----------------------------------
+
+.. automodule:: pyforce.online.failure_sens
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pyforce.online.geim module
 --------------------------
 
 .. automodule:: pyforce.online.geim
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyforce.online.indirect\_reconstruction module
+----------------------------------------------
+
+.. automodule:: pyforce.online.indirect_reconstruction
    :members:
    :undoc-members:
    :show-inheritance:

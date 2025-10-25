@@ -14,12 +14,13 @@
 
 At the moment, the following techniques have been implemented:
 
+- **Singular Value Decomposition** (randomised), with Projection and Interpolation for the Online Phase
 - **Proper Orthogonal Decomposition** with Projection and Interpolation for the Online Phase
-- **Generalised Empirical Interpolation Method**, either with or without regularisation
+- **Empirical Interpolation Method**, either regularised with Tikhonov or not
+- **Generalised Empirical Interpolation Method**, either regularised with Tikhonov or not
 - **Parameterised-Background Data-Weak formulation**
-- **SGreedy algorithm** for optimal sensor positioning
+- **SGreedy** algorithm for optimal sensor positioning
 - an **Indirect Reconstruction** algorithm to reconstruct non-observable fields
-- a **recovery** procedure for malfunctioning sensors
 
 This package is aimed to be a valuable tool for other researchers, engineers, and data scientists working in various fields, not only restricted to the nuclear engineering world. This documentation includes a brief introduction to the world of Reduced Order Modelling and dimensionality reduction, the API documentation and some examples of how to use the various modules of the package.
 
