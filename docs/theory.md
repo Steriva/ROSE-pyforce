@@ -38,7 +38,7 @@ The online phase aims to obtain a quick and reliable way a solution of the FOM f
 
 ## Package structure
 
-The package **pyforce** comprises 3 subpackages: *offline*, *online* and *tools*. The first two collect the main functionalities, in particular the different DDROM techniques; whereas, the last includes importing and storing functions (from *dolfinx* directly or mapping from OpenFOAM), some backend classes for the snapshots and the calculation of integrals/norms. In the following, some figures are sketching how the different classes are connected to each other during the offline and online phases.
+The package **pyforce** comprises 3 subpackages: *offline*, *online* and *tools*. The first two collect the main functionalities, in particular the different DDROM techniques; whereas, the last includes importing and storing functions, some backend classes for the snapshots and the calculation of integrals/norms. In the following, some figures are sketching how the different classes are connected to each other during the offline and online phases.
 
 ### Offline Phase
 Once the snapshots have been generated and collected into the class `FunctionsList`, the aims of this phase consists in generating a proper reduced representation and obtain an optimal sensors configuration.

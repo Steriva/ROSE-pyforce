@@ -12,3 +12,4 @@ In addition to these basic tutorials, some advanced tutorials are also available
 
     Indirect Reconstruction <Tutorials/Advanced/04_indirect_reconstruction.ipynb>
     Failing Sensors in MSFR <Tutorials/Advanced/05_failing_sensors.ipynb>
+    Advanced SVD Methods <Tutorials/Advanced/06_advanced_svd_methods.ipynb>

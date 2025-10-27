@@ -14,7 +14,7 @@ authors = [
     { name = "Carolina Introini", email = "carolina.introini@polimi.it" },
     { name = "Antonio Cammi", email = "antonio.cammi@polimi.it" }
 ]
-keywords = ["reduced-order-modelling", "data-assimilation", "dolfinx"]
+keywords = ["reduced-order-modelling", "data-assimilation", "machine-learning", "pyvista"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
