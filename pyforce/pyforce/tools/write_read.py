@@ -27,10 +27,14 @@ class ReadFromOF():
         Path of the OpenFOAM case directory.
     skip_zero_time : bool, optional
         If `True`, the zero time folder is skipped. Default is `False`.
+    decomposed_case : bool, optional
+        If `True`, the case is considered as decomposed. Default is `False`.
         
     """
     def __init__(self, path: str,
-                 skip_zero_time: bool = False) -> None:
+                 skip_zero_time: bool = False,
+                 decomposed_case: bool = False
+                 ) -> None:
 
         self.path = path
 
@@ -48,6 +52,14 @@ class ReadFromOF():
         
         self.reader = pv.POpenFOAMReader(foam_file_path)
         self.reader.skip_zero_time = skip_zero_time
+
+        # Set case type - decomposed or reconstructed
+        if decomposed_case:
+            self.reader.reader.SetCaseType(0)  # Decomposed case
+            print('Case Type '+ self.reader.case_type)
+            self.decomposed_case = True
+        else:
+            self.decomposed_case = False
 
     def mesh(self):
         """
@@ -105,36 +117,32 @@ class ReadFromOF():
         field = list()
         time_instants = list()
         
+        if use_fluidfoam:
+            assert self.decomposed_case==False, "Fluidfoam reader does not support decomposed cases."
+
         if use_fluidfoam and extract_cell_data:
+
+            file_list = sorted(os.listdir(self.path))
             
-            for jj, file in enumerate(os.listdir(self.path)):
+            for jj, file in enumerate(file_list):
 
                 if verbose:
-                    print('Importing '+var_name+f' using fluidfoam - {(jj+1)/len(os.listdir(self.path))*100:.2f}%', end="\r")
+                    print('Importing '+var_name+f' using fluidfoam - {(jj+1)/len(file_list)*100:.2f}%', end="\r")
             
-
                 if not ((file == '0.orig') or (file == '0') or (file == '0.ss')):
                     d = os.path.join(self.path, file)
                     if os.path.isdir(d):
-
-                        if os.path.exists(d+'/'+var_name):
-                            try:
+                            try: # scalar field
                                 field.append( of.readscalar(self.path, file, var_name, verbose=False).reshape(-1,1) )
                             except ValueError:
-                                field.append(of.readvector(self.path, file, var_name, verbose=False).T)
-                                
+                                try: # vector field
+                                    field.append(of.readvector(self.path, file, var_name, verbose=False).T)
+                                except ValueError: # tensor field
+                                    try: # tensor field
+                                        field.append(of.readtensor(self.path, file, var_name, verbose=False).T)
+                                    except ValueError: # symmetric tensor field
+                                        field.append(of.readsymmtensor(self.path, file, var_name, verbose=False).T)
                             time_instants.append(float(file))
-                
-            # Sorting snapshots according to the params_np
-            indices = sorted(range(len(time_instants)), key=lambda index: time_instants[index])
-            
-            tmp = field.copy()
-            field.clear()
-
-            assert len(tmp) == len(indices)
-            for ii in range(len(indices)):
-                field.append(tmp[indices[ii]])
-            time_instants.sort()    
             
         else: 
             for idx_t in range(len(self.reader.time_values)):
@@ -143,10 +151,13 @@ class ReadFromOF():
 
                 self.reader.set_active_time_value(self.reader.time_values[idx_t])
 
-                if extract_cell_data: # extract centroids data
+                # Extract data
+                if extract_cell_data: # centroids data
                     field.append(self.reader.read()['internalMesh'].cell_data[var_name])
-                else: # extract vertices data
+                else: # vertices data
                     field.append(self.reader.read()['internalMesh'].point_data[var_name])
+
+                # Append time instant
                 time_instants.append(self.reader.time_values[idx_t])
                 
         # Convert list to FunctionsList
