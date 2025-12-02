@@ -14,9 +14,7 @@ import os
 from ..tools.functions_list import FunctionsList
 from ..tools.backends import IntegralCalculator, LoopProgress, Timer
 from .offline_base import OfflineDDROM
-
 import warnings
-warnings.filterwarnings("ignore", category=RuntimeWarning, module="sklearn.utils.extmath")
 
 class rSVD(OfflineDDROM):
     r"""
@@ -56,8 +54,12 @@ class rSVD(OfflineDDROM):
 
         _time = Timer()
         _time.start()
-
-        _U, _S, _ = randomized_svd(train_snaps.return_matrix(), n_components=rank, **kwargs)
+        
+        # Ignore runtime warnings from sklearn
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
+            # Compute the randomized SVD
+            _U, _S, _ = randomized_svd(train_snaps.return_matrix(), n_components=rank, **kwargs)
 
         self.singular_values = _S
         self.svd_modes = FunctionsList(train_snaps.fun_shape)
@@ -728,8 +730,11 @@ class HierarchicalSVD(rSVD):
             _rank = len(self.singular_values) if self.singular_values is not None else len(train_snaps)
 
         if train_snaps is not None:
-            # Perform rSVD on the new training snapshots
-            _U_new, _S_new, _ = randomized_svd(train_snaps.return_matrix(), n_components=_rank, **kwargs)
+            # Ignore runtime warnings from sklearn
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=RuntimeWarning)
+                # Perform rSVD on the new training snapshots
+                _U_new, _S_new, _ = randomized_svd(train_snaps.return_matrix(), n_components=_rank, **kwargs)
 
             new_modes = FunctionsList(train_snaps.fun_shape)
             new_modes.build_from_matrix(_U_new)
@@ -742,10 +747,15 @@ class HierarchicalSVD(rSVD):
             self.svd_modes = new_modes
             self.singular_values = new_sing_vals
         else:
-            _A = np.hstack([self.svd_modes.return_matrix() @ np.diag(self.singular_values),
+            
+            # Ignore runtime warnings from sklearn
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+                _A = np.hstack([self.svd_modes.return_matrix() @ np.diag(self.singular_values),
                             new_modes.return_matrix() @ np.diag(new_sing_vals)])
             
-            _U_updated, _S_updated, _ = randomized_svd(_A, n_components=_rank, **kwargs)
+                _U_updated, _S_updated, _ = randomized_svd(_A, n_components=_rank, **kwargs)
 
             # Update the SVD modes and singular values
             self.svd_modes = FunctionsList(self.svd_modes.fun_shape)
@@ -800,7 +810,10 @@ class IncrementalSVD(rSVD):
         _time = Timer()
         _time.start()
 
-        _U, _S, _Vh = randomized_svd(train_snaps.return_matrix(), n_components=rank, **kwargs)
+        # Ignore runtime warnings from sklearn
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
+            _U, _S, _Vh = randomized_svd(train_snaps.return_matrix(), n_components=rank, **kwargs)
 
         self.singular_values = _S
         self.svd_modes = FunctionsList(train_snaps.fun_shape)
@@ -834,7 +847,9 @@ class IncrementalSVD(rSVD):
         Uplus, Splus, Vhplus = self._compute_new_svd(L, K)
 
         # Step 4: update the SVD
-        self.svd_modes = FunctionsList(snap_matrix = np.hstack([self.svd_modes.return_matrix(), J]) @ Uplus)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
+            self.svd_modes = FunctionsList(snap_matrix = np.hstack([self.svd_modes.return_matrix(), J]) @ Uplus)
         self.singular_values = Splus
         
         tmp_V = np.vstack([ np.hstack([self.Vh.T, np.zeros((self.Vh.shape[1], J.shape[1]))]), 
@@ -849,7 +864,9 @@ class IncrementalSVD(rSVD):
         """
         This method performs the eigen-decomposition step of the incremental SVD algorithm.
         """
-        L = self.svd_modes.return_matrix().T @ new_data
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
+            L = self.svd_modes.return_matrix().T @ new_data
         num_new_snaps = new_data.shape[1]
         
         assert L.shape[0] == self.rank
@@ -861,7 +878,9 @@ class IncrementalSVD(rSVD):
         """
         This method performs the QR decomposition step of the incremental SVD algorithm.
         """
-        H = new_data - self.svd_modes.return_matrix() @ L
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
+            H = new_data - self.svd_modes.return_matrix() @ L
 
         J, K = np.linalg.qr(H)
 
@@ -874,7 +893,10 @@ class IncrementalSVD(rSVD):
         Q = np.vstack([np.hstack([np.diag(self.singular_values), L]),
                         np.hstack([np.zeros((K.shape[0], self.singular_values.shape[0])), K])])
 
-        Uplus, Splus, Vhplus = randomized_svd(Q, n_components=self.rank)
+        # Ignore runtime warnings from sklearn
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
+            Uplus, Splus, Vhplus = randomized_svd(Q, n_components=self.rank)
 
         return Uplus, Splus, Vhplus
 
