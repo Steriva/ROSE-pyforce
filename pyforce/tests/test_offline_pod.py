@@ -42,7 +42,7 @@ def sample_data(grid):
     fun_list = FunctionsList(dofs = nodes.shape[0])
     mu_params = np.linspace(0.1, 40, 50)
     for mu in mu_params:
-        fun_list.append(func(nodes, mu) + np.random.normal(0, 0.5, size=nodes.shape[0]))
+        fun_list.append(func(nodes, mu))
 
     return fun_list
 

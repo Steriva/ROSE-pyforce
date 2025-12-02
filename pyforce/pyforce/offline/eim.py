@@ -7,6 +7,7 @@ import numpy as np
 import scipy
 from collections import namedtuple
 import os
+import warnings
 
 import scipy.linalg
 
@@ -504,21 +505,32 @@ def deim(basis_functions: FunctionsList,
     magic_pt = np.zeros(Mmax, dtype=int)
     P = np.zeros((Mmax, modes.shape[0]))
 
+    # First DEIM point
+    p = np.argmax(np.abs(modes[xm, 0]))
+    P[0, xm[p]] = 1
+    magic_pt[0] = xm[p]
+
     # DEIM loop
     for j in range(1, Mmax):
 
-        # Solve linear system
-        PtU = (P[:j] @ modes[:, :j]).reshape(j,j)
-        y = modes[magic_pt[:j], j]
-        c = np.linalg.solve(PtU, y)
+        print(f'DEIM iteration {j+1}/{Mmax}', end='\r')
 
-        # Compute the residual
-        r = modes[xm, j] - modes[xm, :j] @ c
+        # Avoid warnings for numerical issues
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-        # Select the next DEIM point
-        p = np.argmax(np.abs(r))
-        P[j, xm[p]] = 1
-        magic_pt[j] = xm[p]
+            # Solve linear system
+            PtU = (P[:j] @ modes[:, :j]).reshape(j,j)
+            y = modes[magic_pt[:j], j]
+            c = np.linalg.solve(PtU, y)
+
+            # Compute the residual
+            r = modes[xm, j] - modes[xm, :j] @ c
+
+            # Select the next DEIM point
+            p = np.argmax(np.abs(r))
+            P[j, xm[p]] = 1
+            magic_pt[j] = xm[p]
 
     if path_folder is not None:
         os.makedirs(path_folder, exist_ok=True)
