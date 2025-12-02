@@ -1,7 +1,7 @@
 numpy
 scipy
 matplotlib
-pyvista
+pyvista[jupyter]
 h5py
 ipykernel
 tqdm
