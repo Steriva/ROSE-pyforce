@@ -4,6 +4,7 @@
 # Latest Doc  Update: 07 October 2025
 
 from .functions_list import FunctionsList
+from .backends import LoopProgress
 
 import h5py
 
@@ -86,6 +87,89 @@ class ReadFromOF():
         mesh = self.mesh()
         mesh.save(filename + '.vtk')
 
+
+    # Deprecated version
+    # def import_field(self, var_name: str, 
+    #                  use_fluidfoam: bool = False, 
+    #                  extract_cell_data: bool = True,
+    #                  verbose: bool = True):
+    #     r"""
+    #     Importing all time instances (**skipping zero folder**) from OpenFOAM directory.
+
+    #     Parameters
+    #     ----------
+    #     var_name : str
+    #         Name of the field to import.
+    #     use_fluidfoam : boolean, (Default: False)
+    #         If `True`, the fluidfoam library is used for reading the data (only cell data supported); otherwise, pyvista is used.
+    #     vector : boolean, (Default: False)
+    #         Labelling if the field is a vector (needed only is `use_fluidfoam==True`).
+    #     extract_cell_data : boolean, (Default: True)
+    #         If `True`, the cell data from centroids is extracted; otherwise, point data is extracted.
+    #     verbose: boolean, (Default = True) 
+    #         If `True`, printing is enabled
+            
+    #     Returns
+    #     -------
+    #     field : list
+    #         Imported list of functions (each element is a `numpy.ndarray`), sorted in time.
+    #     time_instants : list
+    #         Sorted list of time.
+    #     """
+        
+    #     field = list()
+    #     time_instants = list()
+        
+    #     if use_fluidfoam:
+    #         assert self.decomposed_case==False, "Fluidfoam reader does not support decomposed cases."
+
+    #     if use_fluidfoam and extract_cell_data:
+
+    #         file_list = sorted(os.listdir(self.path))
+            
+    #         for jj, file in enumerate(file_list):
+
+    #             if verbose:
+    #                 print('Importing '+var_name+f' using fluidfoam - {(jj+1)/len(file_list)*100:.2f}%', end="\r")
+            
+    #             if not ((file == '0.orig') or (file == '0') or (file == '0.ss')):
+    #                 d = os.path.join(self.path, file)
+    #                 if os.path.isdir(d):
+    #                         try: # scalar field
+    #                             field.append( of.readscalar(self.path, file, var_name, verbose=False).reshape(-1,1) )
+    #                         except ValueError:
+    #                             try: # vector field
+    #                                 field.append(of.readvector(self.path, file, var_name, verbose=False).T)
+    #                             except ValueError: # tensor field
+    #                                 try: # tensor field
+    #                                     field.append(of.readtensor(self.path, file, var_name, verbose=False).T)
+    #                                 except ValueError: # symmetric tensor field
+    #                                     field.append(of.readsymmtensor(self.path, file, var_name, verbose=False).T)
+    #                         time_instants.append(float(file))
+            
+    #     else: 
+    #         for idx_t in range(len(self.reader.time_values)):
+    #             if verbose:
+    #                 print('Importing '+var_name+f' using pyvista - {(idx_t+1)/len(self.reader.time_values)*100:.2f}%', end="\r")
+
+    #             self.reader.set_active_time_value(self.reader.time_values[idx_t])
+
+    #             # Extract data
+    #             if extract_cell_data: # centroids data
+    #                 field.append(self.reader.read()['internalMesh'].cell_data[var_name])
+    #             else: # vertices data
+    #                 field.append(self.reader.read()['internalMesh'].point_data[var_name])
+
+    #             # Append time instant
+    #             time_instants.append(self.reader.time_values[idx_t])
+                
+    #     # Convert list to FunctionsList
+    #     snaps = FunctionsList(dofs=field[0].flatten().shape[0])
+    #     for f in field:
+    #         snaps.append(f.flatten())
+
+    #     return snaps, time_instants
+    
     def import_field(self, var_name: str, 
                      use_fluidfoam: bool = False, 
                      extract_cell_data: bool = True,
@@ -108,64 +192,139 @@ class ReadFromOF():
             
         Returns
         -------
-        field : list
+        field : FunctionsList
             Imported list of functions (each element is a `numpy.ndarray`), sorted in time.
-        time_instants : list
+        time_instants : np.ndarray
             Sorted list of time.
         """
-        
-        field = list()
-        time_instants = list()
         
         if use_fluidfoam:
             assert self.decomposed_case==False, "Fluidfoam reader does not support decomposed cases."
 
         if use_fluidfoam and extract_cell_data:
+            field, time_instants = self._import_with_fluidfoam(self.path, var_name, verbose)
+        else:
+            field, time_instants = self._import_with_pyvista(var_name, extract_cell_data, verbose)
 
-            file_list = sorted(os.listdir(self.path))
-            
-            for jj, file in enumerate(file_list):
-
-                if verbose:
-                    print('Importing '+var_name+f' using fluidfoam - {(jj+1)/len(file_list)*100:.2f}%', end="\r")
-            
-                if not ((file == '0.orig') or (file == '0') or (file == '0.ss')):
-                    d = os.path.join(self.path, file)
-                    if os.path.isdir(d):
-                            try: # scalar field
-                                field.append( of.readscalar(self.path, file, var_name, verbose=False).reshape(-1,1) )
-                            except ValueError:
-                                try: # vector field
-                                    field.append(of.readvector(self.path, file, var_name, verbose=False).T)
-                                except ValueError: # tensor field
-                                    try: # tensor field
-                                        field.append(of.readtensor(self.path, file, var_name, verbose=False).T)
-                                    except ValueError: # symmetric tensor field
-                                        field.append(of.readsymmtensor(self.path, file, var_name, verbose=False).T)
-                            time_instants.append(float(file))
-            
-        else: 
-            for idx_t in range(len(self.reader.time_values)):
-                if verbose:
-                    print('Importing '+var_name+f' using pyvista - {(idx_t+1)/len(self.reader.time_values)*100:.2f}%', end="\r")
-
-                self.reader.set_active_time_value(self.reader.time_values[idx_t])
-
-                # Extract data
-                if extract_cell_data: # centroids data
-                    field.append(self.reader.read()['internalMesh'].cell_data[var_name])
-                else: # vertices data
-                    field.append(self.reader.read()['internalMesh'].point_data[var_name])
-
-                # Append time instant
-                time_instants.append(self.reader.time_values[idx_t])
-                
         # Convert list to FunctionsList
         snaps = FunctionsList(dofs=field[0].flatten().shape[0])
         for f in field:
             snaps.append(f.flatten())
 
         return snaps, time_instants
+    
+    def _import_with_fluidfoam(self, var_name: str, verbose: bool = True, file_list: list[str] = None):
+        """
+        Importing time instances from OpenFOAM directory using fluidfoam.
+        
+        Parameters
+        ----------
+        var_name : str
+            Name of the field to import.
+        verbose: boolean, (Default = True) 
+            If `True`, printing is enabled
+        file_list : list[str], optional
+            List of folders to read. If `None`, all folders in the case directory are read.
+
+        Returns
+        -------
+        field : list
+            Imported list of functions (each element is a `numpy.ndarray`), sorted in time.
+        time_instants : np.ndarray
+            Sorted list of time.
+        """
+
+        field = list()
+        time_instants = list()
+
+        if file_list is None:
+            file_list = sorted(os.listdir(self.path))
+        if verbose:
+            bar = LoopProgress(msg=f'Importing {var_name} using fluidfoam', final = len(file_list))
+        
+        for file in file_list:
+        
+            if not ((file == '0.orig') or (file == '0') or (file == '0.ss')):
+                d = os.path.join(self.path, file)
+                if os.path.isdir(d):
+                        try: # scalar field
+                            field.append( of.readscalar(self.path, file, var_name, verbose=False).reshape(-1,1) )
+                        except ValueError:
+                            try: # vector field
+                                field.append(of.readvector(self.path, file, var_name, verbose=False).T)
+                            except ValueError: # tensor field
+                                try: # tensor field
+                                    field.append(of.readtensor(self.path, file, var_name, verbose=False).T)
+                                except ValueError: # symmetric tensor field
+                                    field.append(of.readsymmtensor(self.path, file, var_name, verbose=False).T)
+                        time_instants.append(float(file))
+
+            if verbose:
+                bar.update(1)
+
+        return field, np.asarray(time_instants)
+    
+    def _import_with_pyvista(self, var_name: str, extract_cell_data: bool = True, verbose: bool = True, time_instants: list[float] = None):
+        """
+        Importing time instances from OpenFOAM directory using pyvista.
+        
+        Parameters  
+        ----------
+        var_name : str
+            Name of the field to import.
+        extract_cell_data : boolean, (Default: True)
+            If `True`, the cell data from centroids is extracted; otherwise, point data is extracted.
+        verbose: boolean, (Default = True) 
+            If `True`, printing is enabled
+        time_instants : list[float], optional
+            List of time instants to read. If `None`, all time instants are read.
+        
+        Returns
+        -------
+        field : list
+            Imported list of functions (each element is a `numpy.ndarray`), sorted in time.
+        time_instants : np.ndarray
+            Sorted list of time.
+        """
+
+        if time_instants is None:
+            time_instants = self.reader.time_values
+            
+        field = list()
+
+        if verbose:
+            bar = LoopProgress(msg=f'Importing {var_name} using pyvista', final = len(time_instants))
+
+
+        for idx_t, t in enumerate(time_instants):
+            if verbose:
+                bar.update(1)
+
+            # Set active time
+            self.reader.set_active_time_value(t)
+            grid = self.reader.read()
+            mesh = grid['internalMesh']
+
+            # Extract data
+            if extract_cell_data: # centroids data
+                available = mesh.cell_data.keys()
+                if var_name not in available:
+                    raise KeyError(f"Field '{var_name}' not found at time {t}. Available fields: {list(available)}")
+                    
+                field.append(mesh.cell_data[var_name])
+            else: # vertices data
+                available = mesh.point_data.keys()
+                if var_name not in available:
+                    raise KeyError(f"Field '{var_name}' not found at time {t}. Available fields: {list(available)}")
+                field.append(mesh.point_data[var_name])
+
+            # Extract data
+            # if extract_cell_data: # centroids data
+            #     field.append(self.reader.read()['internalMesh'].cell_data[var_name])
+            # else: # vertices data
+            #     field.append(self.reader.read()['internalMesh'].point_data[var_name])
+
+        return field, np.asarray(time_instants)
     
 def ImportFunctionsList(filename: str, format: str = 'h5', return_var_name: bool = False):
     """
