@@ -45,6 +45,9 @@ class IntegralCalculator():
         elif gdim == 3:
             self.cell_sizes = grid.compute_cell_sizes()['Volume']
 
+        if np.isclose(np.sum(self.cell_sizes), 0):
+            raise ValueError("The sum of cell sizes is zero, which is not valid. Check the gdim parameter for the adopted grid.")
+
         self.n_points = grid.n_points
         self.n_cells  = grid.n_cells
         
