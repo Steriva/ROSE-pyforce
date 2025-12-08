@@ -15,7 +15,7 @@ Welcome to pyforce's docs!
    installation.md
    theory.md
    tutorials
-   adv_example
+   adv_tutorials
    API Documentation <api/pyforce>
    bibliography
 
