@@ -121,7 +121,13 @@ cd ROSE-pyforce
 then install the package using `pip` (this will work if you already have `python` and `pip` installed, it might not be true for `miniconda` installations):
 
 ```bash
-python -m pip install pyforce/
+python -m pip install rose-pyforce/
+```
+or equivalently
+
+```bash
+cd rose-pyforce
+python -m pip install .
 ```
 
 Another option is also provided adopting the `environment.yml` file as follows (If you face issues with rendering figures with `pyvista`, this might solve the problem):
@@ -129,7 +135,7 @@ Another option is also provided adopting the `environment.yml` file as follows (
 ```bash
 conda env create -f pyforce/environment.yml
 conda activate pyforce-env
-python -m pip install pyforce/
+python -m pip install rose-pyforce/
 ```
 
 The requirements are listed [here](https://github.com/ERMETE-Lab/ROSE-pyforce/blob/main/pyforce/requirements.txt).

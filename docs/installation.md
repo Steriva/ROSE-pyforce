@@ -43,7 +43,7 @@ At this point, you choose one of the two following procedures. The first one is 
 
 Given an existing conda environment, you can install *pyforce* using `pip` as
 ```bash
-python -m pip install pyforce/
+python -m pip install rose-pyforce/
 ```
 
 ### 2. Using `environment.yml`
@@ -57,7 +57,7 @@ conda activate pyforce-env
 
 Then, install the package using `pip`
 ```bash
-python -m pip install pyforce/
+python -m pip install rose-pyforce/
 ```
 
 This procedure can solve issues related to the installation of some dependencies, especially `pyvista`.
