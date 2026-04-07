@@ -1,0 +1,606 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyforce.offline.sensors &mdash; pyforce 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/pyforce_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Welcome to <em>pyforce</em>’s documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../migration.html">Migration Guide: v0.1.3 to v1.0+</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../theory.html">Theory and package structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Basic Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../adv_tutorials.html">Advanced Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/pyforce.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Community Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyforce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyforce.offline.sensors</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyforce.offline.sensors</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Offline Phase: sensors classes</span>
+<span class="c1"># Author: Stefano Riva, NRG, Politecnico di Milano</span>
+<span class="c1"># Latest Code Update: 07 October 2025</span>
+<span class="c1"># Latest Doc  Update: 07 October 2025</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..tools.functions_list</span><span class="w"> </span><span class="kn">import</span> <span class="n">FunctionsList</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..tools.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntegralCalculator</span><span class="p">,</span> <span class="n">LoopProgress</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<div class="viewcode-block" id="SensorLibraryBase">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.SensorLibraryBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SensorLibraryBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for sensors, mathematically modelled as linear functionals:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        v(u; \boldsymbol{\xi}) = \int_{\Omega} u(\mathbf{x}) \mathcal{K}(\mathbf{x}, \boldsymbol{\xi}) d\mathbf{x}</span>
+
+<span class="sd">    where :math:`\mathcal{K}(\mathbf{x}, \boldsymbol{\xi})` is the kernel function and :math:`\boldsymbol{\xi}` are the sensor parameters (e.g., centre of mass and variance for Gaussian sensors).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the nodes where the sensors are placed.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">library</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the library of sensors.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_library</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the number of sensors in the library.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="p">)</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_define</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to define a sensor, given its parameters.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="SensorLibraryBase.create_library">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.SensorLibraryBase.create_library">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_library</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to create a library of sensors.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">FunctionsList</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the action of the sensor on a given function.&quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">FunctionsList</span><span class="p">):</span>
+            <span class="n">_output</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">func</span><span class="p">:</span>
+                <span class="n">_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_output</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="c1"># shape (Nsensors, Ns)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># shape (Nsensors, 1)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input must be a FunctionsList or a numpy array.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SensorLibraryBase.set_library">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.SensorLibraryBase.set_library">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_library</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">:</span> <span class="n">FunctionsList</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the sensor library to a given FunctionsList.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        library: FunctionsList</span>
+<span class="sd">            The library of sensors to be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="o">=</span> <span class="n">FunctionsList</span><span class="p">(</span><span class="n">dofs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="o">.</span><span class="n">_list</span> <span class="o">=</span> <span class="n">library</span><span class="o">.</span><span class="n">_list</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SensorLibraryBase.add_sensor">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.SensorLibraryBase.add_sensor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a sensor to the library.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kernel: np.ndarray</span>
+<span class="sd">            The kernel function of the sensor to be added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="o">=</span> <span class="n">FunctionsList</span><span class="p">(</span><span class="n">dofs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_action_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idx_sens</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the action of a single sensor on a given function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func: np.ndarray</span>
+<span class="sd">            The function to be sensed.</span>
+<span class="sd">        idx_sens: int</span>
+<span class="sd">            The index of the sensor in the library.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        action: float</span>
+<span class="sd">            The action of the sensor on the function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sensor library is not created. Please call &#39;create_library&#39; or `set_library` methods first.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">L2_inner_product</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="p">[</span><span class="n">idx_sens</span><span class="p">])</span>
+
+<div class="viewcode-block" id="SensorLibraryBase.action">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.SensorLibraryBase.action">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">FunctionsList</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the action of the sensor library on a given function (both single or matrix) or a list of functions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func: FunctionsList | np.ndarray</span>
+<span class="sd">            The function or list of functions to be sensed.</span>
+<span class="sd">        M: int, optional (default=None)</span>
+<span class="sd">            If provided, only the first M sensors in the library are used.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        actions: np.ndarray</span>
+<span class="sd">            The actions of the sensor library on the function(s). Shape (Nsensors, Ns).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sensor library is not created. Please call &#39;create_library&#39; or `set_library` methods first.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">M</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">M</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="p">),</span> <span class="s2">&quot;M cannot be larger than the number of sensors in the library.&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">FunctionsList</span><span class="p">):</span>
+            <span class="n">_measurements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">func</span><span class="p">:</span>
+                <span class="n">_measurements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_single</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">M</span><span class="p">)])</span>
+                                    <span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_measurements</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="c1"># shape (Nsensors, Ns)</span>
+        
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="c1"># shape (N, 1)</span>
+            
+            <span class="n">_measurements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">_measurements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_single</span><span class="p">(</span><span class="n">func</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">M</span><span class="p">)])</span>
+                                    <span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_measurements</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="c1"># shape (Nsensors, Ns)</span></div>
+</div>
+
+        
+<div class="viewcode-block" id="GaussianSensorLibrary">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.GaussianSensorLibrary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GaussianSensorLibrary</span><span class="p">(</span><span class="n">SensorLibraryBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class implementing a library of Gaussian sensors.</span>
+
+<span class="sd">    A Gaussian sensor is mathematically modelled as a linear functional, with a Gaussian kernel function with two parameters: centre of mass and variance:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        v(u(\mathbf{x}); \mathbf{x}_m, s) = C\cdot \int_{\Omega} u(\mathbf{x}) \exp\left(-\frac{||\mathbf{x} - \mathbf{x}_m||^2}{2s^2}\right) d\mathbf{x}</span>
+
+<span class="sd">    where :math:`\mathbf{x}_m` is the centre of mass, :math:`s` is the standard deviation (variance), and :math:`C` is a normalization constant, such that :math:`v(1; \mathbf{x}_m, s) = 1` or equivalently that the :math:`L^1` norm of the kernel is equal to one.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid: pyvista.UnstructuredGrid</span>
+<span class="sd">        The computational grid.</span>
+<span class="sd">    use_centroids: bool, optional (default=True)</span>
+<span class="sd">        If True, the sensors are placed at the centroids of the grid cells. If False, the sensors are placed at the grid points.</span>
+<span class="sd">    gdim: int, optional (default=3)</span>
+<span class="sd">        The geometric dimension of the problem. Default is 3.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">pv</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">,</span> <span class="n">use_centroids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">gdim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gdim</span> <span class="o">=</span> <span class="n">gdim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span> <span class="o">=</span> <span class="n">IntegralCalculator</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">gdim</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">use_centroids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">()</span><span class="o">.</span><span class="n">points</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">points</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_define</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Define a Gaussian sensor given its parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xm: np.ndarray</span>
+<span class="sd">            The centre of mass of the Gaussian sensor.</span>
+<span class="sd">        s: float</span>
+<span class="sd">            The standard deviation (variance) of the Gaussian sensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        kernel: function</span>
+<span class="sd">            The kernel function of the Gaussian sensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        
+        <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">xm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        
+        <span class="n">_kernel</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+
+        <span class="c1"># Normalization constant</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">L1_norm</span><span class="p">(</span><span class="n">_kernel</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_kernel</span> <span class="o">*</span> <span class="n">C</span>
+
+<div class="viewcode-block" id="GaussianSensorLibrary.create_library">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.GaussianSensorLibrary.create_library">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_library</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">xm_list</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                       <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a library of Gaussian sensors, given a variance and a list of centres of mass (if provided).</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        s: float</span>
+<span class="sd">            The standard deviation (variance) of the Gaussian sensors.</span>
+<span class="sd">        xm_list: np.ndarray, optional (default=None)</span>
+<span class="sd">            A list of centres of mass for the Gaussian sensors. If None, the sensors are placed at the grid nodes.</span>
+<span class="sd">        verbose: bool, optional (default=False)</span>
+<span class="sd">            If True, print progress information.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">xm_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xm_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xm_list</span> <span class="o">=</span> <span class="n">xm_list</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="o">=</span> <span class="n">FunctionsList</span><span class="p">(</span><span class="n">dofs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">progress</span> <span class="o">=</span> <span class="n">LoopProgress</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Creating Gaussian Sensor Library&quot;</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">xm_list</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">xm</span> <span class="ow">in</span> <span class="n">xm_list</span><span class="p">:</span>
+
+            <span class="c1"># Define and append the sensor to the library</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_define</span><span class="p">(</span><span class="n">xm</span><span class="o">=</span><span class="n">xm</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Update progress bar</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">percentage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</div>
+
+        
+<div class="viewcode-block" id="ExponentialSensorLibrary">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.ExponentialSensorLibrary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExponentialSensorLibrary</span><span class="p">(</span><span class="n">SensorLibraryBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class implementing a library of Exponential sensors.</span>
+
+<span class="sd">    An Exponential sensor is mathematically modelled as a linear functional, with an Exponential kernel function with two parameters: centre of mass and variance:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        v(u(\mathbf{x}); \mathbf{x}_m, s) = C\cdot \int_{\Omega} u(\mathbf{x}) \exp\left(-\frac{||\mathbf{x} - \mathbf{x}_m||}{s}\right) d\mathbf{x}</span>
+
+<span class="sd">    where :math:`\mathbf{x}_m` is the centre of mass, :math:`s` is the standard deviation (variance), and :math:`C` is a normalization constant, such that :math:`v(1; \mathbf{x}_m, s) = 1` or equivalently that the :math:`L^1` norm of the kernel is equal to one.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid: pyvista.UnstructuredGrid</span>
+<span class="sd">        The computational grid.</span>
+<span class="sd">    use_centroids: bool, optional (default=True)</span>
+<span class="sd">        If True, the sensors are placed at the centroids of the grid cells. If False, the sensors are placed at the grid points.</span>
+<span class="sd">    gdim: int, optional (default=3)</span>
+<span class="sd">        The geometric dimension of the problem. Default is 3.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">pv</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">,</span> <span class="n">use_centroids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">gdim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gdim</span> <span class="o">=</span> <span class="n">gdim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span> <span class="o">=</span> <span class="n">IntegralCalculator</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">gdim</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">use_centroids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">()</span><span class="o">.</span><span class="n">points</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">points</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_define</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Define an Exponential sensor given its parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xm: np.ndarray</span>
+<span class="sd">            The centre of mass of the Exponential sensor.</span>
+<span class="sd">        s: float</span>
+<span class="sd">            The standard deviation (variance) of the Exponential sensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        kernel: function</span>
+<span class="sd">            The kernel function of the Exponential sensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">xm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">s</span><span class="p">)</span>
+
+        <span class="n">_kernel</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+
+        <span class="c1"># Normalization constant</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">L1_norm</span><span class="p">(</span><span class="n">_kernel</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_kernel</span> <span class="o">*</span> <span class="n">C</span>
+
+
+<div class="viewcode-block" id="ExponentialSensorLibrary.create_library">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.ExponentialSensorLibrary.create_library">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_library</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">xm_list</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                       <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a library of Exponential sensors, given a variance and a list of centres of mass (if provided).</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        s: float</span>
+<span class="sd">            The standard deviation (variance) of the Exponential sensors.</span>
+<span class="sd">        xm_list: np.ndarray, optional (default=None)</span>
+<span class="sd">            A list of centres of mass for the Exponential sensors. If None, the sensors are placed at the grid nodes.</span>
+<span class="sd">        verbose: bool, optional (default=False)</span>
+<span class="sd">            If True, print progress information.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">xm_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xm_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xm_list</span> <span class="o">=</span> <span class="n">xm_list</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="o">=</span> <span class="n">FunctionsList</span><span class="p">(</span><span class="n">dofs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">progress</span> <span class="o">=</span> <span class="n">LoopProgress</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Creating Exponential Sensor Library&quot;</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">xm_list</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">xm</span> <span class="ow">in</span> <span class="n">xm_list</span><span class="p">:</span>
+
+            <span class="c1"># Define and append the sensor to the library</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_define</span><span class="p">(</span><span class="n">xm</span><span class="o">=</span><span class="n">xm</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Update progress bar</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">percentage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="IndicatorFunctionSensorLibrary">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.IndicatorFunctionSensorLibrary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IndicatorFunctionSensorLibrary</span><span class="p">(</span><span class="n">SensorLibraryBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class implementing a library of Indicator Function sensors.</span>
+
+<span class="sd">    An Indicator Function sensor is mathematically modelled as a linear functional, with an Indicator Function kernel:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        v(u(\mathbf{x}); \mathbf{x}_m, r) = \int_{\Omega} u(\mathbf{x}) \mathcal{I}(\mathbf{x}, \mathbf{x}_m, r) d\mathbf{x}</span>
+
+<span class="sd">    where :math:`\mathcal{I}(\mathbf{x}, \mathbf{x}_m, r)` is the indicator function defined as:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \mathcal{I}(\mathbf{x}, \mathbf{x}_m, r) = </span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">        1 &amp; \text{if } ||\mathbf{x} - \mathbf{x}_m|| \leq r \\</span>
+<span class="sd">        0 &amp; \text{otherwise}</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    where :math:`\mathbf{x}_m` is the centre of mass and :math:`r` is the radius.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid: pyvista.UnstructuredGrid</span>
+<span class="sd">        The computational grid.</span>
+<span class="sd">    use_centroids: bool, optional (default=True)    </span>
+<span class="sd">        If True, the sensors are placed at the centroids of the grid cells. If False, the sensors are placed at the grid points.</span>
+<span class="sd">    gdim: int, optional (default=3)</span>
+<span class="sd">        The geometric dimension of the problem. Default is 3.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">pv</span><span class="o">.</span><span class="n">UnstructuredGrid</span><span class="p">,</span> 
+                 <span class="n">use_centroids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">gdim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gdim</span> <span class="o">=</span> <span class="n">gdim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span> <span class="o">=</span> <span class="n">IntegralCalculator</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">gdim</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="o">=</span> <span class="kc">None</span>    
+
+        <span class="k">if</span> <span class="n">use_centroids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">()</span><span class="o">.</span><span class="n">points</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">points</span>   
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_define</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Define an Indicator Function sensor given its parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xm: np.ndarray</span>
+<span class="sd">            The centre of mass of the Indicator Function sensor.</span>
+<span class="sd">        r: float</span>
+<span class="sd">            The radius of the Indicator Function sensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        kernel: function</span>
+<span class="sd">            The kernel function of the Indicator Function sensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">xm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">r</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="IndicatorFunctionSensorLibrary.create_library">
+<a class="viewcode-back" href="../../../api/pyforce.offline.html#pyforce.offline.sensors.IndicatorFunctionSensorLibrary.create_library">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_library</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">xm_list</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">          </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          Create a library of Indicator Function sensors, given a radius and a list of centres of mass (if provided).</span>
+<span class="sd">          </span>
+<span class="sd">          Parameters</span>
+<span class="sd">          ----------</span>
+<span class="sd">          r: float</span>
+<span class="sd">                The radius of the Indicator Function sensors.</span>
+<span class="sd">          xm_list: np.ndarray, optional (default=None)</span>
+<span class="sd">                A list of centres of mass for the Indicator Function sensors. If None, the sensors are placed at the grid nodes.</span>
+<span class="sd">          verbose: bool, optional (default=False)</span>
+<span class="sd">                If True, print progress information.</span>
+<span class="sd">    </span>
+<span class="sd">          &quot;&quot;&quot;</span>
+    
+          <span class="k">if</span> <span class="n">xm_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">xm_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+          <span class="bp">self</span><span class="o">.</span><span class="n">xm_list</span> <span class="o">=</span> <span class="n">xm_list</span>
+    
+          <span class="bp">self</span><span class="o">.</span><span class="n">_library</span> <span class="o">=</span> <span class="n">FunctionsList</span><span class="p">(</span><span class="n">dofs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">))</span>
+          <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">progress</span> <span class="o">=</span> <span class="n">LoopProgress</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Creating Indicator Function Sensor Library&quot;</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">xm_list</span><span class="p">))</span>
+    
+          <span class="k">for</span> <span class="n">xm</span> <span class="ow">in</span> <span class="n">xm_list</span><span class="p">:</span>
+    
+                <span class="c1"># Define and append the sensor to the library</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_library</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">_define</span><span class="p">(</span><span class="n">xm</span><span class="o">=</span><span class="n">xm</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">r</span><span class="p">)</span>
+                <span class="p">)</span>
+    
+                <span class="c1"># Update progress bar</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                 <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">percentage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Stefano Riva, Carolina Introini, Antonio Cammi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
